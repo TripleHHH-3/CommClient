@@ -6,8 +6,6 @@ import com.ut.commclient.util.ResUtil;
 import com.ut.commclient.util.TcpServerThread;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -41,6 +39,7 @@ public class TcpServerTab extends Tab {
         stopBtn.setDisable(true);
 
         sendBtn = new Button("发送信息");
+        sendBtn.setDisable(true);
 
         sendMsgTxt = new TextArea();
         sendMsgTxt.setPrefHeight(100);
@@ -83,6 +82,7 @@ public class TcpServerTab extends Tab {
         int port = Integer.parseInt(portTxt.getText());
 
         beginBtn.setDisable(true);
+        sendBtn.setDisable(false);
 
         //开启监听线程
         new Thread(() -> {

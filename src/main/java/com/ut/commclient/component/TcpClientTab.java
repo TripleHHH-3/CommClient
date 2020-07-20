@@ -2,8 +2,6 @@ package com.ut.commclient.component;
 
 import com.ut.commclient.constant.HeartBeat;
 import com.ut.commclient.util.ResUtil;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
