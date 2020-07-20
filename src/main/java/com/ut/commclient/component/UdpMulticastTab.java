@@ -8,25 +8,29 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class UdpMulticastTab extends Tab {
-    Button bindBeginBtn;
-    Button bindStopBtn;
-    TextField bindIpGroupTxt;
-    TextField bindPortTxt;
-    TextArea recTxt;
-    MulticastSocket recSocket;
-    MulticastSocket sendSocket;
-    TextArea sendMsgTxt;
-    Button sendBtn;
-    Button listenBeginBtn;
-    Button listenStopBtn;
-    TextField listenIpGroupTxt;
-    TextField listenPortTxt;
+    private Button bindBeginBtn;
+    private Button bindStopBtn;
+    private TextField bindIpGroupTxt;
+    private TextField bindPortTxt;
+    private TextArea recTxt;
+    private MulticastSocket recSocket;
+    private MulticastSocket sendSocket;
+    private TextArea sendMsgTxt;
+    private Button sendBtn;
+    private Button listenBeginBtn;
+    private Button listenStopBtn;
+    private TextField listenIpGroupTxt;
+    private TextField listenPortTxt;
 
     public UdpMulticastTab() {
         bindIpGroupTxt = new TextField("224.255.10.0");

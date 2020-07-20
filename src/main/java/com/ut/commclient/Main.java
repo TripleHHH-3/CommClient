@@ -1,9 +1,13 @@
 package com.ut.commclient;
 
+import com.alibaba.fastjson.JSON;
+import com.esotericsoftware.yamlbeans.YamlReader;
+import com.ut.commclient.common.Host;
 import com.ut.commclient.component.TcpClientTab;
 import com.ut.commclient.component.TcpServerTab;
 import com.ut.commclient.component.UdpDatagramTab;
 import com.ut.commclient.component.UdpMulticastTab;
+import com.ut.commclient.config.Config;
 import com.ut.commclient.model.TreeModel;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -15,6 +19,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
+import java.io.FileReader;
+import java.util.List;
 
 public class Main extends Application {
     BorderPane rootPane;
@@ -39,6 +46,73 @@ public class Main extends Application {
         primaryStage.setWidth(800);
         primaryStage.setOnCloseRequest(event -> System.exit(0));
         primaryStage.show();
+
+        initConfig();
+    }
+
+    private void initConfig() {
+        //读取配置文件
+        Config config = null;
+        try {
+            YamlReader reader = new YamlReader(new FileReader("src\\main\\resources\\application.yml"));
+            config = JSON.parseObject(JSON.toJSONString(reader.read()), Config.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        ObservableList<Node> children = stackPane.getChildren();
+
+        //执行tcpClient初始化
+        List<Host> tcpClient = config.getTcpClient();
+        if (tcpClient != null && tcpClient.size() > 0) {
+            tcpClient.forEach(host -> {
+                TcpClientTab tcpClientTab = new TcpClientTab();
+                tcpClientTab.setText(host.getIp() + ":" + host.getPort());
+                ((TabPane) children.get(0)).getTabs().add(tcpClientTab);
+                tcpClientTab.getIpTxt().setText(host.getIp());
+                tcpClientTab.getPortTxt().setText(host.getPort().toString());
+                tcpClientTab.getBeginBtn().fire();
+            });
+        }
+
+        //执行tcpServer初始化
+        List<Host> tcpServer = config.getTcpServer();
+        if (tcpServer != null && tcpServer.size() > 0) {
+            tcpServer.forEach(host -> {
+                TcpServerTab tcpServerTab = new TcpServerTab();
+                tcpServerTab.setText(host.getPort().toString());
+                ((TabPane) children.get(1)).getTabs().add(tcpServerTab);
+                tcpServerTab.getPortTxt().setText(host.getPort().toString());
+                tcpServerTab.getBeginBtn().fire();
+            });
+        }
+
+        //执行udpDatagram初始化
+        List<Host> udpDatagram = config.getUdpDatagram();
+        if (udpDatagram != null && udpDatagram.size() > 0) {
+            udpDatagram.forEach(host -> {
+                UdpDatagramTab udpDatagramTab = new UdpDatagramTab();
+                udpDatagramTab.setText(host.getIp() + ":" + host.getPort());
+                ((TabPane) children.get(2)).getTabs().add(udpDatagramTab);
+                udpDatagramTab.getIpTxt().setText(host.getIp());
+                udpDatagramTab.getRecPortTxt().setText(host.getPort().toString());
+                udpDatagramTab.getListenBtn().fire();
+            });
+        }
+
+        //执行udpMulticast初始化
+        List<Host> udpMulticast = config.getUdpMulticast();
+        if (udpMulticast != null && udpMulticast.size() > 0) {
+            udpMulticast.forEach(host -> {
+                UdpMulticastTab udpMulticastTab = new UdpMulticastTab();
+                udpMulticastTab.setText(host.getIp() + ":" + host.getPort());
+                ((TabPane) children.get(3)).getTabs().add(udpMulticastTab);
+                udpMulticastTab.getListenIpGroupTxt().setText(host.getIp());
+                udpMulticastTab.getListenPortTxt().setText(host.getPort().toString());
+                udpMulticastTab.getListenBeginBtn().fire();
+            });
+        }
     }
 
     private void initRootPane() {

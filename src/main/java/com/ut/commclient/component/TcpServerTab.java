@@ -11,22 +11,25 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class TcpServerTab extends Tab {
-    Button beginBtn;
-    Button stopBtn;
-    TextField portTxt;
-    TextArea recTxt;
-    ServerSocket serverSocket = null;
-    Button sendBtn;
-    TextArea sendMsgTxt;
-    ListView<ClientModel> clientListView;
+    private Button beginBtn;
+    private Button stopBtn;
+    private TextField portTxt;
+    private TextArea recTxt;
+    private ServerSocket serverSocket = null;
+    private Button sendBtn;
+    private TextArea sendMsgTxt;
+    private ListView<ClientModel> clientListView;
 
     public TcpServerTab() {
         Label portLb = new Label("端口:");

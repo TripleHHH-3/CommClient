@@ -8,25 +8,29 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class UdpDatagramTab extends Tab {
-    TextField ipTxt;
-    TextField sendPortTxt;
-    TextArea recMsgTxt;
-    Button bindBtn;
-    Button stopBindBtn;
-    Button sendBtn;
-    DatagramSocket sendSocket;
-    DatagramSocket recSocket;
-    TextArea sendMsgTxt;
-    TextField recPortTxt;
-    Button listenBtn;
-    Button stopListenBtn;
+    private TextField ipTxt;
+    private TextField sendPortTxt;
+    private TextArea recMsgTxt;
+    private Button bindBtn;
+    private Button stopBindBtn;
+    private Button sendBtn;
+    private DatagramSocket sendSocket;
+    private DatagramSocket recSocket;
+    private TextArea sendMsgTxt;
+    private TextField recPortTxt;
+    private Button listenBtn;
+    private Button stopListenBtn;
 
     public UdpDatagramTab() {
         ipTxt = new TextField("127.0.0.1");
@@ -126,7 +130,7 @@ public class UdpDatagramTab extends Tab {
             e.printStackTrace();
             return;
         }
-        DatagramPacket packet = new DatagramPacket(bytes, bytes.length,inetAddress,port);
+        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, inetAddress, port);
 
         //3.发送数据包
         try {
@@ -150,7 +154,7 @@ public class UdpDatagramTab extends Tab {
                 stopListenBtn.setDisable(false);
 
                 while (true) {
-                //创建一个数据包用于接收服务端返回的信息
+                    //创建一个数据包用于接收服务端返回的信息
                     byte[] bytes = new byte[1024];
                     DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length);
 
@@ -167,7 +171,7 @@ public class UdpDatagramTab extends Tab {
 
             } catch (Exception e) {
                 e.printStackTrace();
-                if(recSocket!=null)recSocket.close();
+                if (recSocket != null) recSocket.close();
                 listenBtn.setDisable(false);
             }
 

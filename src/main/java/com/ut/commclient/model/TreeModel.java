@@ -1,34 +1,16 @@
 package com.ut.commclient.model;
 
 import javafx.scene.control.Tab;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class TreeModel {
     private String name;
     private Class<? extends Tab> tabClass;
-
-    public TreeModel() {
-    }
-
-    public TreeModel(String name, Class<? extends Tab> tabClass) {
-        this.name = name;
-        this.tabClass = tabClass;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Class<? extends Tab> getTabClass() {
-        return tabClass;
-    }
-
-    public void setTabClass(Class<? extends Tab> tabClass) {
-        this.tabClass = tabClass;
-    }
 
     @Override
     public String toString() {

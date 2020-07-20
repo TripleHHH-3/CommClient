@@ -10,6 +10,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,19 +19,21 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
+@EqualsAndHashCode(callSuper = true)
+@Data
 public class TcpClientTab extends Tab {
-    public Button beginBtn;
-    public Button stopBtn;
-    public Button sendBtn;
-    public TextField ipTxt;
-    public TextField portTxt;
-    public TextArea sendMsgTxt;
-    public TextArea recMsgTxt;
+    private Button beginBtn;
+    private Button stopBtn;
+    private Button sendBtn;
+    private TextField ipTxt;
+    private TextField portTxt;
+    private TextArea sendMsgTxt;
+    private TextArea recMsgTxt;
     private PrintWriter writer; // 声明PrintWriter类对象
-    Socket socket; // 声明Socket对象
-    BufferedReader reader;
+    private Socket socket; // 声明Socket对象
+    private BufferedReader reader;
     private long lastEchoTime;
-    Boolean isStop;
+    private Boolean isStop;
 
     public TcpClientTab() {
         ipTxt = new TextField("127.0.0.1");
@@ -87,6 +91,14 @@ public class TcpClientTab extends Tab {
             isStop = true;
             ResUtil.closeWriterAndReaderAndSocket(reader, writer, socket);
         });
+    }
+
+    public Button getBeginBtn() {
+        return beginBtn;
+    }
+
+    public void setBeginBtn(Button beginBtn) {
+        this.beginBtn = beginBtn;
     }
 
     public void connectBegin() {
