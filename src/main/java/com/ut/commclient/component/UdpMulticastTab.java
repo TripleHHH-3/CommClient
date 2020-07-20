@@ -14,32 +14,48 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class UdpMulticastTab extends Tab {
-    Button beginBtn;
-    Button stopBtn;
-    TextField groupIpTxt;
-    TextField portTxt;
+    Button bindBeginBtn;
+    Button bindStopBtn;
+    TextField bindIpGroupTxt;
+    TextField bindPortTxt;
     TextArea recTxt;
-    MulticastSocket socket;
+    MulticastSocket recSocket;
+    MulticastSocket sendSocket;
     TextArea sendMsgTxt;
     Button sendBtn;
+    Button listenBeginBtn;
+    Button listenStopBtn;
+    TextField listenIpGroupTxt;
+    TextField listenPortTxt;
 
     public UdpMulticastTab() {
-        groupIpTxt = new TextField("224.255.10.0");
-        groupIpTxt.setPrefWidth(100);
+        bindIpGroupTxt = new TextField("224.255.10.0");
+        bindIpGroupTxt.setPrefWidth(100);
 
-        portTxt = new TextField("9999");
-        portTxt.setPrefWidth(50);
+        bindPortTxt = new TextField("9999");
+        bindPortTxt.setPrefWidth(50);
 
-        beginBtn = new Button("开始监听");
+        bindBeginBtn = new Button("绑定群组");
 
-        stopBtn = new Button("停止监听");
-        stopBtn.setDisable(true);
+        bindStopBtn = new Button("停止绑定");
+        bindStopBtn.setDisable(true);
 
         sendBtn = new Button("发送信息");
         sendBtn.setDisable(true);
 
         sendMsgTxt = new TextArea();
         sendMsgTxt.setPrefHeight(100);
+
+        listenIpGroupTxt = new TextField("224.255.10.0");
+        listenIpGroupTxt.setPrefWidth(100);
+
+        listenPortTxt = new TextField("9999");
+        listenPortTxt.setPrefWidth(50);
+
+        listenBeginBtn = new Button("监听群组");
+
+        listenStopBtn = new Button("停止监听");
+        listenStopBtn.setDisable(true);
 
         recTxt = new TextArea();
         recTxt.setEditable(false);
@@ -48,96 +64,114 @@ public class UdpMulticastTab extends Tab {
         hBox.setSpacing(10);
 //        hBox.setPadding(new Insets(5));
         hBox.setAlignment(Pos.CENTER);
-        hBox.getChildren().addAll(groupIpTxt, portTxt, beginBtn, stopBtn, sendBtn);
+        hBox.getChildren().addAll(bindIpGroupTxt, bindPortTxt, bindBeginBtn, bindStopBtn, sendBtn);
+
+        HBox hBox2 = new HBox();
+        hBox2.setSpacing(10);
+        hBox2.setAlignment(Pos.CENTER);
+        hBox2.getChildren().addAll(listenIpGroupTxt, listenPortTxt, listenBeginBtn, listenStopBtn);
 
         VBox vBox = new VBox();
         vBox.setMaxWidth(500);
         vBox.setSpacing(10);
         vBox.setPadding(new Insets(5));
-        vBox.getChildren().addAll(hBox, sendMsgTxt, recTxt);
+        vBox.getChildren().addAll(hBox, sendMsgTxt, hBox2, recTxt);
 
         this.setContent(vBox);
 
-        beginBtn.setOnAction(actionEvent -> listenBegin());
+        bindBeginBtn.setOnAction(actionEvent -> bindBegin());
 
         sendBtn.setOnAction(actionEvent -> sendMsg());
 
-        stopBtn.setOnAction(actionEvent -> listenEnd());
+        bindStopBtn.setOnAction(actionEvent -> bindEnd());
+
+        listenBeginBtn.setOnAction(actionEvent -> listenBegin());
+
+        listenStopBtn.setOnAction(actionEvent -> listenEnd());
 
         this.setOnCloseRequest(event -> {
-            if (socket != null) socket.close();
+            if (recSocket != null) recSocket.close();
+            if (sendSocket != null) sendSocket.close();
         });
     }
 
-    private void listenBegin() {
-        int port = Integer.parseInt(portTxt.getText());
-        String groupIp = groupIpTxt.getText();
-
-        beginBtn.setDisable(true);
-
-        new Thread(() -> {
-            try {
-                InetAddress group;
-                group = InetAddress.getByName(groupIp); // 指定接收地址
-                socket = new MulticastSocket(port); // 绑定多点广播套接字
-                socket.setTimeToLive(1);
-                socket.joinGroup(group); // 加入广播组
-
-                stopBtn.setDisable(false);
-                sendBtn.setDisable(false);
-
-                while (true) {
-                    byte[] data = new byte[1024]; // 创建byte数组
-                    // 待接收的数据包
-                    DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
-                    try {
-                        socket.receive(packet); // 接收数据包
-                        String message = new String(packet.getData(), 0, packet.getLength()); // 获取数据包中内容
-                        // 将接收内容显示在文本域中
-                        recTxt.appendText(message + "\n");
-                    } catch (Exception e) {
-                        e.printStackTrace(); // 输出异常信息
-                        recTxt.appendText(e.getMessage() + "\n");
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
-                if (socket != null) socket.close();
-                beginBtn.setDisable(false);
-            }
-        }).start();
+    private void bindBegin() {
+        // todo 绑定失败的处理
+        try {
+            sendSocket = new MulticastSocket();
+            bindBeginBtn.setDisable(true);
+            bindStopBtn.setDisable(false);
+            sendBtn.setDisable(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendMsg() {
-        String groupIp = groupIpTxt.getText();
-        int port = Integer.parseInt(portTxt.getText());
+        //todo ip 端口 格式判断
+        String ip = bindIpGroupTxt.getText();
+        int port = Integer.parseInt(bindPortTxt.getText());
 
-        InetAddress group;
+        InetAddress ipGroup;
         try {
-            group = InetAddress.getByName(groupIp);
+            ipGroup = InetAddress.getByName(ip);
         } catch (Exception e) {
             e.printStackTrace();
             return;
         }
 
-
         byte[] data = sendMsgTxt.getText().getBytes(); // 声明字节数组
         // 将数据打包
-        DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
+        DatagramPacket packet = new DatagramPacket(data, data.length, ipGroup, port);
         System.out.println(new String(data)); // 将广播信息输出
         try {
-            socket.send(packet); // 发送数据
+            sendSocket.send(packet); // 发送数据
         } catch (Exception e) {
             e.printStackTrace(); // 输出异常信息
         }
     }
 
-    private void listenEnd() {
-        socket.close();
-        beginBtn.setDisable(false);
-        stopBtn.setDisable(true);
+    private void bindEnd() {
+        if (sendSocket != null) sendSocket.close();
+        bindBeginBtn.setDisable(false);
+        bindStopBtn.setDisable(true);
         sendBtn.setDisable(true);
+    }
+
+    private void listenBegin() {
+        //TODO ip 端口 格式判断
+        int port = Integer.parseInt(listenPortTxt.getText());
+        String ip = listenIpGroupTxt.getText();
+
+        new Thread(() -> {
+            try {
+                InetAddress ipGroup = InetAddress.getByName(ip); // 指定接收地址
+                recSocket = new MulticastSocket(port); // 绑定多点广播套接字
+                recSocket.setTimeToLive(1);
+                recSocket.joinGroup(ipGroup); // 加入广播组
+
+                listenBeginBtn.setDisable(true);
+                listenStopBtn.setDisable(false);
+
+                while (true) {
+                    byte[] data = new byte[1024]; // 创建byte数组
+                    // 待接收的数据包
+                    DatagramPacket packet = new DatagramPacket(data, data.length, ipGroup, port);
+                    recSocket.receive(packet); // 接收数据包
+                    String message = new String(packet.getData(), 0, packet.getLength()); // 获取数据包中内容
+                    // 将接收内容显示在文本域中
+                    recTxt.appendText(message + "\n");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (recSocket != null) recSocket.close();
+            }
+        }).start();
+    }
+
+    private void listenEnd() {
+        listenBeginBtn.setDisable(false);
+        listenStopBtn.setDisable(true);
+        if (recSocket != null) recSocket.close();
     }
 }
