@@ -3,10 +3,7 @@ package com.ut.commclient;
 import com.alibaba.fastjson.JSON;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import com.ut.commclient.common.Host;
-import com.ut.commclient.component.TcpClientTab;
-import com.ut.commclient.component.TcpServerTab;
-import com.ut.commclient.component.UdpDatagramTab;
-import com.ut.commclient.component.UdpMulticastTab;
+import com.ut.commclient.component.*;
 import com.ut.commclient.config.Config;
 import com.ut.commclient.model.TreeModel;
 import javafx.application.Application;
@@ -52,7 +49,7 @@ public class Main extends Application {
 
     private void initConfig() {
         //读取配置文件
-        Config config = null;
+        Config config;
         try {
             YamlReader reader = new YamlReader(new FileReader("src\\main\\resources\\application.yml"));
             config = JSON.parseObject(JSON.toJSONString(reader.read()), Config.class);
@@ -63,6 +60,7 @@ public class Main extends Application {
 
         ObservableList<Node> children = stackPane.getChildren();
 
+        if (config == null) return;
         //执行tcpClient初始化
         List<Host> tcpClient = config.getTcpClient();
         if (tcpClient != null && tcpClient.size() > 0) {

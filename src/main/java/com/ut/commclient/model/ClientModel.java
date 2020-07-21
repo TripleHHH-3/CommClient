@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.PrintWriter;
+import java.io.BufferedWriter;
 import java.net.Socket;
 
 @Data
@@ -14,7 +14,7 @@ public class ClientModel {
     private String ip;
     private Integer port;
     private Socket socket;
-    private PrintWriter writer;
+    private BufferedWriter writer;
     private Long lastRecTime;
 
     @Override

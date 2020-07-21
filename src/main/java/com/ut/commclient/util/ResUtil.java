@@ -1,13 +1,13 @@
 package com.ut.commclient.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public abstract class ResUtil {
-    public static void close(BufferedReader reader, PrintWriter writer, ServerSocket serverSocket, Socket socket) {
+    public static void close(BufferedReader reader, BufferedWriter writer, ServerSocket serverSocket, Socket socket) {
         if (serverSocket != null) {
             try {
                 serverSocket.close();
@@ -33,7 +33,11 @@ public abstract class ResUtil {
         }
 
         if (writer != null) {
-            writer.close();
+            try {
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -49,7 +53,7 @@ public abstract class ResUtil {
         close(reader, null, null, socket);
     }
 
-    public static void closeWriterAndSocket(PrintWriter writer, Socket socket) {
+    public static void closeWriterAndSocket(BufferedWriter writer, Socket socket) {
         close(null, writer, null, socket);
     }
 
@@ -57,7 +61,7 @@ public abstract class ResUtil {
         close(null, null, null, socket);
     }
 
-    public static void closeWriterAndReaderAndSocket(BufferedReader reader, PrintWriter writer, Socket socket) {
+    public static void closeWriterAndReaderAndSocket(BufferedReader reader, BufferedWriter writer, Socket socket) {
         close(reader, writer, null, socket);
     }
 }

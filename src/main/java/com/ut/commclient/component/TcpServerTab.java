@@ -2,8 +2,8 @@ package com.ut.commclient.component;
 
 import com.ut.commclient.constant.HeartBeat;
 import com.ut.commclient.model.ClientModel;
+import com.ut.commclient.thread.TcpServerThread;
 import com.ut.commclient.util.ResUtil;
-import com.ut.commclient.util.TcpServerThread;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -14,7 +14,9 @@ import javafx.scene.layout.VBox;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.PrintWriter;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -109,7 +111,7 @@ public class TcpServerTab extends Tab {
                             client.getInetAddress().getHostAddress(),
                             client.getPort(),
                             client,
-                            new PrintWriter(client.getOutputStream(), true),
+                            new BufferedWriter(new OutputStreamWriter(client.getOutputStream())),
                             System.currentTimeMillis()
                     );
 
@@ -154,7 +156,14 @@ public class TcpServerTab extends Tab {
             }
 
             if (clientList != null && clientList.size() > 0) {
-                clientList.forEach(client -> client.getWriter().println(HeartBeat.ECHO_CLIENT));
+                clientList.forEach(client -> {
+                    try {
+                        client.getWriter().write(HeartBeat.ECHO_CLIENT);
+                        client.getWriter().flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
         }
     }
@@ -162,7 +171,11 @@ public class TcpServerTab extends Tab {
     private void sendMsg() {
         ClientModel client = clientListView.getSelectionModel().getSelectedItem();
         if (client != null) {
-            client.getWriter().println(sendMsgTxt.getText());
+            try {
+                client.getWriter().write(sendMsgTxt.getText());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

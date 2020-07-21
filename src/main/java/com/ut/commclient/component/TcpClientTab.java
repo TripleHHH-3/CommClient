@@ -13,9 +13,7 @@ import javafx.scene.layout.VBox;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
@@ -29,10 +27,10 @@ public class TcpClientTab extends Tab {
     private TextField portTxt;
     private TextArea sendMsgTxt;
     private TextArea recMsgTxt;
-    private PrintWriter writer; // 声明PrintWriter类对象
+    private BufferedWriter writer; // 声明PrintWriter类对象
     private Socket socket; // 声明Socket对象
     private BufferedReader reader;
-    private long lastEchoTime;
+    private Long lastEchoTime;
     private Boolean isStop;
 
     public TcpClientTab() {
@@ -93,14 +91,6 @@ public class TcpClientTab extends Tab {
         });
     }
 
-    public Button getBeginBtn() {
-        return beginBtn;
-    }
-
-    public void setBeginBtn(Button beginBtn) {
-        this.beginBtn = beginBtn;
-    }
-
     public void connectBegin() {
         //获取ip与端口
         String ip = ipTxt.getText();
@@ -112,9 +102,7 @@ public class TcpClientTab extends Tab {
         isStop = false;
 
         //开启线程,连接服务端
-        new Thread(() -> {
-            connectToServer(ip, port);
-        }).start();
+        new Thread(() -> connectToServer(ip, port)).start();
 
     }
 
@@ -123,7 +111,7 @@ public class TcpClientTab extends Tab {
         for (int i = 1; ; i++) {
             try {
                 socket = new Socket(ip, port);
-                writer = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+                writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                 break;
             } catch (Exception e) {
                 e.printStackTrace();
@@ -157,10 +145,9 @@ public class TcpClientTab extends Tab {
                     String msg = new String(chars, 0, len);
 
                     //如果收到心跳包则进行相应的处理并忽略此信息
-                    String heartBeatStr = msg.replaceAll("(\r\n|\r|\n|\n\r)", "");
-                    if (heartBeatStr.equals(HeartBeat.ECHO_SERVER) || heartBeatStr.equals(HeartBeat.ECHO_CLIENT)) {
-                        System.out.println(heartBeatStr);
-                        heartBeatHandler(heartBeatStr);
+                    if (msg.equals(HeartBeat.ECHO_SERVER) || msg.equals(HeartBeat.ECHO_CLIENT)) {
+                        System.out.println(msg);
+                        heartBeatHandler(msg);
                         continue;
                     }
 
@@ -183,7 +170,8 @@ public class TcpClientTab extends Tab {
             lastEchoTime = System.currentTimeMillis();
         } else {
             try {
-                writer.println(HeartBeat.ECHO_CLIENT + ":" + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort());
+                writer.write(HeartBeat.ECHO_CLIENT + ":" + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort());
+                writer.flush();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -195,13 +183,7 @@ public class TcpClientTab extends Tab {
         lastEchoTime = System.currentTimeMillis();
         while (!socket.isClosed()) {
             //当前时间大于最后一次接收到心跳包的时间就停止连接并且重新尝试连接
-//                out:
             if (System.currentTimeMillis() - lastEchoTime > HeartBeat.TIME_OUT) {
-//                    try {
-//                        socket.sendUrgentData(0xFF);
-//                        break out;
-//                    } catch (Exception ignored) {
-//                    }
                 recMsgTxt.appendText("对方断线" + "\n");
                 sendBtn.setDisable(true);
                 ResUtil.closeWriterAndReaderAndSocket(reader, writer, socket);
@@ -209,11 +191,12 @@ public class TcpClientTab extends Tab {
                 new Thread(() -> connectToServer(ip, port)).start();
                 break;
             }
-            //发送心跳包
-            writer.println(HeartBeat.ECHO_SERVER);
             try {
+                //发送心跳包
+                writer.write(HeartBeat.ECHO_SERVER);
+                writer.flush();
                 Thread.sleep(HeartBeat.TIME_PAUSE);
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -231,6 +214,11 @@ public class TcpClientTab extends Tab {
 
     public void sendMsg() {
         String msg = sendMsgTxt.getText();
-        writer.println(msg);
+        try {
+            writer.write(msg);
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

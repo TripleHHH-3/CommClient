@@ -80,11 +80,14 @@
                         </manifestEntries>
 
                     </archive>
+                    <excludes>
+                        <exclude>application.yml</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
 
 
-            <!--在打包阶段将依赖的jar包导出到lib目录下-->
+<!--            在打包阶段将依赖的jar包导出到lib目录下-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>

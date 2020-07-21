@@ -1,11 +1,13 @@
-package com.ut.commclient.util;
+package com.ut.commclient.thread;
 
 import com.ut.commclient.constant.HeartBeat;
 import com.ut.commclient.model.ClientModel;
+import com.ut.commclient.util.ResUtil;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -39,10 +41,9 @@ public class TcpServerThread implements Runnable {
                 String msgStr = new String(chars, 0, len);
 
                 //如果是心跳包额外处理，并忽略此信息
-                String[] split = msgStr.replaceAll("(\r\n|\r|\n|\n\r)", "").split(":");
-                if (split[0].equals("echo")) {
+                if (msgStr.contains("echo")) {
                     System.out.println(msgStr);
-                    heartBeatHandler(split);
+                    heartBeatHandler(msgStr);
                     continue;
                 }
 
@@ -55,11 +56,17 @@ public class TcpServerThread implements Runnable {
         }
     }
 
-    private void heartBeatHandler(String[] split) {
+    private void heartBeatHandler(String msgStr) {
+        String[] split = msgStr.split(":");
         if (split[1].equals("server")) {
             clientListView.getItems().forEach(client -> {
                 if (client.getSocket().equals(this.client)) {
-                    client.getWriter().println(HeartBeat.ECHO_SERVER);
+                    try {
+                        client.getWriter().write(HeartBeat.ECHO_SERVER);
+                        client.getWriter().flush();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
         } else {
