@@ -1,5 +1,6 @@
 package com.ut.commclient.component;
 
+import com.ut.commclient.common.BufferedWriterLock;
 import com.ut.commclient.constant.HeartBeat;
 import com.ut.commclient.model.ClientModel;
 import com.ut.commclient.thread.TcpServerThread;
@@ -13,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.log4j.Log4j;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import java.net.Socket;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Log4j
 public class TcpServerTab extends Tab {
     private Button beginBtn;
     private Button stopBtn;
@@ -111,14 +114,14 @@ public class TcpServerTab extends Tab {
                             client.getInetAddress().getHostAddress(),
                             client.getPort(),
                             client,
-                            new BufferedWriter(new OutputStreamWriter(client.getOutputStream())),
+                            new BufferedWriterLock(new OutputStreamWriter(client.getOutputStream())),
                             System.currentTimeMillis()
                     );
 
                     Platform.runLater(() -> clientListView.getItems().add(clientModel));
 
                     //为每个客户端的连接开启一个线程
-                    new Thread(new TcpServerThread(client, recTxt, clientListView)).start();
+                    new Thread(new TcpServerThread(serverSocket,client, recTxt, clientListView)).start();
                 }
 
             } catch (Exception e) {
@@ -130,6 +133,7 @@ public class TcpServerTab extends Tab {
 
                 ResUtil.closeServerSocket(serverSocket);
                 e.printStackTrace();
+                log.error(e);
             }
 
         }).start();
@@ -157,12 +161,7 @@ public class TcpServerTab extends Tab {
 
             if (clientList != null && clientList.size() > 0) {
                 clientList.forEach(client -> {
-                    try {
-                        client.getWriter().write(HeartBeat.ECHO_CLIENT);
-                        client.getWriter().flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    client.getWriter().writeFlush(HeartBeat.ECHO_CLIENT);
                 });
             }
         }
@@ -171,11 +170,7 @@ public class TcpServerTab extends Tab {
     private void sendMsg() {
         ClientModel client = clientListView.getSelectionModel().getSelectedItem();
         if (client != null) {
-            try {
-                client.getWriter().write(sendMsgTxt.getText());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            client.getWriter().writeFlush(sendMsgTxt.getText());
         }
     }
 

@@ -1,0 +1,31 @@
+#tcpClient:
+#  - ip: 127.0.0.1
+#    port: 8998
+#    content: 1111111111111
+#  - ip: 127.0.0.1
+#    port: 8999
+#    content: 222222222222
+
+#tcpServer:
+#  - ip: 127.0.0.1
+#    port: 8998
+#    content: {"Type":"tcp_server","FromIp":"192.168.60.45","FromPort":"8001","ToIp":"192.168.105.32","ToPort":4001,"Data":"192.168.60.45:8001(server)-->192.168.105.32:4001(client)"}
+#  - ip: 127.0.0.1
+#    port: 8999
+#    content: {"Type":"tcp_server","FromIp":"192.168.60.45","FromPort":"8001","ToIp":"192.168.105.32","ToPort":4001,"Data":"192.168.60.45:8001(server)-->192.168.105.32:4001(client)"}
+#
+#udpDatagram:
+#  - ip: 127.0.0.1
+#    port: 8080
+#    content: {"Type":"tcp_server","FromIp":"192.168.60.45","FromPort":"8001","ToIp":"192.168.105.32","ToPort":4001,"Data":"192.168.60.45:8001(server)-->192.168.105.32:4001(client)"}
+#  - ip: 127.0.0.1
+#    port: 8081
+#    content: {"Type":"tcp_server","FromIp":"192.168.60.45","FromPort":"8001","ToIp":"192.168.105.32","ToPort":4001,"Data":"192.168.60.45:8001(server)-->192.168.105.32:4001(client)"}
+#
+#udpMulticast:
+#  - ip: 224.255.10.0
+#    port: 9991
+#    content: {"Type":"tcp_server","FromIp":"192.168.60.45","FromPort":"8001","ToIp":"192.168.105.32","ToPort":4001,"Data":"192.168.60.45:8001(server)-->192.168.105.32:4001(client)"}
+#  - ip: 224.255.10.0
+#    port: 9999
+#    content: {"Type":"tcp_server","FromIp":"192.168.60.45","FromPort":"8001","ToIp":"192.168.105.32","ToPort":4001,"Data":"192.168.60.45:8001(server)-->192.168.105.32:4001(client)"}

@@ -1,6 +1,9 @@
 package com.ut.commclient.component;
 
+import com.ut.commclient.common.BufferedWriterLock;
+import com.ut.commclient.model.RecModel;
 import com.ut.commclient.constant.HeartBeat;
+import com.ut.commclient.util.FileUtil;
 import com.ut.commclient.util.ResUtil;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -12,13 +15,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.log4j.Log4j;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Log4j
 public class TcpClientTab extends Tab {
     private Button beginBtn;
     private Button stopBtn;
@@ -27,8 +34,8 @@ public class TcpClientTab extends Tab {
     private TextField portTxt;
     private TextArea sendMsgTxt;
     private TextArea recMsgTxt;
-    private BufferedWriter writer; // 声明PrintWriter类对象
-    private Socket socket; // 声明Socket对象
+    private BufferedWriterLock writer;
+    private Socket socket;
     private BufferedReader reader;
     private Long lastEchoTime;
     private Boolean isStop;
@@ -111,11 +118,11 @@ public class TcpClientTab extends Tab {
         for (int i = 1; ; i++) {
             try {
                 socket = new Socket(ip, port);
-                writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+                writer = new BufferedWriterLock(new OutputStreamWriter(socket.getOutputStream()));
                 break;
             } catch (Exception e) {
                 e.printStackTrace();
-                if (isStop) return;
+                if (isStop || i == 5) return;
                 //停止多长时间后再重试
                 try {
                     Thread.sleep(HeartBeat.TIME_RETRY);
@@ -123,6 +130,11 @@ public class TcpClientTab extends Tab {
                     ex.printStackTrace();
                 }
                 recMsgTxt.appendText("连接失败：" + e.getMessage() + "重试次数：" + i + "\n");
+                try {
+                    log.error(InetAddress.getLocalHost().getHostAddress() + "===>" + ip + ":" + port, e);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         }
 
@@ -153,9 +165,21 @@ public class TcpClientTab extends Tab {
 
                     recMsgTxt.appendText(msg + "\n");
                     System.out.println(msg);
+
+                    //写入文件
+                    RecModel recModel = new RecModel("Server",
+                            socket.getInetAddress().getHostAddress(),
+                            socket.getPort(),
+                            "client",
+                            socket.getLocalAddress().getHostAddress(),
+                            socket.getLocalPort(),
+                            msg);
+//                    FileUtil.write("src\\main\\resources\\rec\\rec.txt", recModel);
+                    FileUtil.write(".\\rec\\rec.txt", recModel);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                log.error(e);
                 ResUtil.closeReader(reader);
             }
         }).start();
@@ -169,12 +193,7 @@ public class TcpClientTab extends Tab {
         if (heartBeatStr.equals(HeartBeat.ECHO_SERVER)) {
             lastEchoTime = System.currentTimeMillis();
         } else {
-            try {
-                writer.write(HeartBeat.ECHO_CLIENT + ":" + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort());
-                writer.flush();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            writer.writeFlush(HeartBeat.ECHO_CLIENT + ":" + socket.getLocalAddress().getHostAddress() + ":" + socket.getLocalPort());
         }
     }
 
@@ -182,6 +201,11 @@ public class TcpClientTab extends Tab {
         //先初始化第一次时间
         lastEchoTime = System.currentTimeMillis();
         while (!socket.isClosed()) {
+            try {
+                Thread.sleep(HeartBeat.TIME_PAUSE);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             //当前时间大于最后一次接收到心跳包的时间就停止连接并且重新尝试连接
             if (System.currentTimeMillis() - lastEchoTime > HeartBeat.TIME_OUT) {
                 recMsgTxt.appendText("对方断线" + "\n");
@@ -191,14 +215,8 @@ public class TcpClientTab extends Tab {
                 new Thread(() -> connectToServer(ip, port)).start();
                 break;
             }
-            try {
-                //发送心跳包
-                writer.write(HeartBeat.ECHO_SERVER);
-                writer.flush();
-                Thread.sleep(HeartBeat.TIME_PAUSE);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            //发送心跳包
+            writer.writeFlush(HeartBeat.ECHO_SERVER);
         }
     }
 
@@ -214,11 +232,6 @@ public class TcpClientTab extends Tab {
 
     public void sendMsg() {
         String msg = sendMsgTxt.getText();
-        try {
-            writer.write(msg);
-            writer.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        writer.writeFlush(msg);
     }
 }

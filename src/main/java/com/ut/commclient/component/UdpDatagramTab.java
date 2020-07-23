@@ -10,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.log4j.Log4j;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,6 +19,7 @@ import java.net.InetAddress;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
+@Log4j
 public class UdpDatagramTab extends Tab {
     private TextField ipTxt;
     private TextField sendPortTxt;
@@ -106,6 +108,7 @@ public class UdpDatagramTab extends Tab {
             e.printStackTrace();
             if (sendSocket != null) sendSocket.close();
             bindBtn.setDisable(false);
+            log.error(e);
         }
     }
 
@@ -137,6 +140,7 @@ public class UdpDatagramTab extends Tab {
             sendSocket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
+            log.error(e);
         }
     }
 
@@ -173,6 +177,7 @@ public class UdpDatagramTab extends Tab {
                 e.printStackTrace();
                 if (recSocket != null) recSocket.close();
                 listenBtn.setDisable(false);
+                log.error(e);
             }
 
         }).start();

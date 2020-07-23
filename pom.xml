@@ -56,6 +56,12 @@
             <version>3.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.12</version>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -81,8 +87,13 @@
 
                     </archive>
                     <excludes>
-                        <exclude>application.yml</exclude>
+                        <exclude>/config/*</exclude>
+                        <exclude>/rec/*</exclude>
+                        <exclude>/task/*</exclude>
                     </excludes>
+<!--                    <includes>-->
+<!--                        <include>application.yml</include>-->
+<!--                    </includes>-->
                 </configuration>
             </plugin>
 

@@ -3,9 +3,13 @@ package com.ut.commclient;
 import com.alibaba.fastjson.JSON;
 import com.esotericsoftware.yamlbeans.YamlReader;
 import com.ut.commclient.common.Host;
-import com.ut.commclient.component.*;
+import com.ut.commclient.component.TcpClientTab;
+import com.ut.commclient.component.TcpServerTab;
+import com.ut.commclient.component.UdpDatagramTab;
+import com.ut.commclient.component.UdpMulticastTab;
 import com.ut.commclient.config.Config;
 import com.ut.commclient.model.TreeModel;
+import com.ut.commclient.thread.TaskThread;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -45,13 +49,16 @@ public class Main extends Application {
         primaryStage.show();
 
         initConfig();
+
+        new Thread(new TaskThread(stackPane)).start();
     }
 
     private void initConfig() {
         //读取配置文件
         Config config;
         try {
-            YamlReader reader = new YamlReader(new FileReader("src\\main\\resources\\application.yml"));
+//            YamlReader reader = new YamlReader(new FileReader("src\\main\\resources\\application.yml"));
+            YamlReader reader = new YamlReader(new FileReader(".\\config\\application.yml"));
             config = JSON.parseObject(JSON.toJSONString(reader.read()), Config.class);
         } catch (Exception e) {
             e.printStackTrace();

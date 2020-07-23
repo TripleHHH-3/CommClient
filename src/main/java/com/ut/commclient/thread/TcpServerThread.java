@@ -1,14 +1,15 @@
 package com.ut.commclient.thread;
 
+import com.ut.commclient.model.RecModel;
 import com.ut.commclient.constant.HeartBeat;
 import com.ut.commclient.model.ClientModel;
+import com.ut.commclient.util.FileUtil;
 import com.ut.commclient.util.ResUtil;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
@@ -17,11 +18,13 @@ import java.nio.charset.StandardCharsets;
  */
 public class TcpServerThread implements Runnable {
 
+    private final ServerSocket serverSocket;
     private final Socket client;
     private final TextArea contentTxt;
     private final ListView<ClientModel> clientListView;
 
-    public TcpServerThread(Socket client, TextArea contentTxt, ListView<ClientModel> clientListView) {
+    public TcpServerThread(ServerSocket serverSocket, Socket client, TextArea contentTxt, ListView<ClientModel> clientListView) {
+        this.serverSocket = serverSocket;
         this.client = client;
         this.contentTxt = contentTxt;
         this.clientListView = clientListView;
@@ -49,6 +52,17 @@ public class TcpServerThread implements Runnable {
 
                 System.out.println(msgStr);
                 contentTxt.appendText(msgStr + "\n");
+
+                //写入文件
+                RecModel recModel = new RecModel("tcpClient",
+                        client.getLocalAddress().getHostAddress(),
+                        client.getPort(),
+                        "tcpServer",
+                        serverSocket.getInetAddress().getHostAddress(),
+                        serverSocket.getLocalPort(),
+                        msgStr);
+//                FileUtil.write("src\\main\\resources\\rec\\rec.txt",recModel);
+                FileUtil.write(".\\rec\\rec.txt",recModel);
             }
         } catch (Exception e) {
             ResUtil.closeReaderAndSocket(reader, client);
@@ -58,23 +72,20 @@ public class TcpServerThread implements Runnable {
 
     private void heartBeatHandler(String msgStr) {
         String[] split = msgStr.split(":");
-        if (split[1].equals("server")) {
-            clientListView.getItems().forEach(client -> {
-                if (client.getSocket().equals(this.client)) {
-                    try {
-                        client.getWriter().write(HeartBeat.ECHO_SERVER);
-                        client.getWriter().flush();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+        synchronized (clientListView) {
+            if (split[1].equals("server")) {
+                clientListView.getItems().forEach(client -> {
+                    if (client.getSocket().equals(this.client)) {
+                        client.getWriter().writeFlush(HeartBeat.ECHO_SERVER);
                     }
-                }
-            });
-        } else {
-            clientListView.getItems().forEach(client -> {
-                if (client.getIp().equals(split[2]) && client.getPort() == Integer.parseInt(split[3])) {
-                    client.setLastRecTime(System.currentTimeMillis());
-                }
-            });
+                });
+            } else {
+                clientListView.getItems().forEach(client -> {
+                    if (client.getIp().equals(split[2]) && client.getPort() == Integer.parseInt(split[3])) {
+                        client.setLastRecTime(System.currentTimeMillis());
+                    }
+                });
+            }
         }
     }
 
