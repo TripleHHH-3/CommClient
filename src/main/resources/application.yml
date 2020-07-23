@@ -1,23 +1,20 @@
-#tcpClient:
-#  - ip: 127.0.0.1
-#    port: 8998
-#  - ip: 127.0.0.1
-#    port: 8999
-#
-#tcpServer:
-#  - ip: 127.0.0.1
-#    port: 8998
-#  - ip: 127.0.0.1
-#    port: 8999
-#
-#udpDatagram:
-#  - ip: 127.0.0.1
-#    port: 8080
-#  - ip: 127.0.0.1
-#    port: 8081
-#
-#udpMulticast:
-#  - ip: 224.255.10.0
-#    port: 9991
-#  - ip: 224.255.10.0
-#    port: 9999
+spring:
+  profiles:
+    active: dev
+---
+spring:
+  profiles: dev
+
+recPath: src\main\resources\rec\rec.txt
+starterPath: src\main\resources\starter\starter.yml
+taskPath: src\main\resources\task\task.yml
+---
+spring:
+  profiles: pro
+
+recPath: .\rec\rec.txt
+starterPath: .\starter\starter.yml
+taskPath: .\task\task.yml
+---
+spring:
+  profiles: test

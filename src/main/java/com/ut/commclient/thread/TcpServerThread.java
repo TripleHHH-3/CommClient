@@ -1,5 +1,6 @@
 package com.ut.commclient.thread;
 
+import com.ut.commclient.config.Config;
 import com.ut.commclient.model.RecModel;
 import com.ut.commclient.constant.HeartBeat;
 import com.ut.commclient.model.ClientModel;
@@ -61,8 +62,8 @@ public class TcpServerThread implements Runnable {
                         serverSocket.getInetAddress().getHostAddress(),
                         serverSocket.getLocalPort(),
                         msgStr);
-//                FileUtil.write("src\\main\\resources\\rec\\rec.txt",recModel);
-                FileUtil.write(".\\rec\\rec.txt",recModel);
+                FileUtil.write(Config.recPath,recModel);
+//                FileUtil.write(".\\rec\\rec.txt",recModel);
             }
         } catch (Exception e) {
             ResUtil.closeReaderAndSocket(reader, client);

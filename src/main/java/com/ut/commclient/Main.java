@@ -8,6 +8,7 @@ import com.ut.commclient.component.TcpServerTab;
 import com.ut.commclient.component.UdpDatagramTab;
 import com.ut.commclient.component.UdpMulticastTab;
 import com.ut.commclient.config.Config;
+import com.ut.commclient.model.Starter;
 import com.ut.commclient.model.TreeModel;
 import com.ut.commclient.thread.TaskThread;
 import javafx.application.Application;
@@ -55,11 +56,11 @@ public class Main extends Application {
 
     private void initConfig() {
         //读取配置文件
-        Config config;
+        Starter starter;
         try {
-//            YamlReader reader = new YamlReader(new FileReader("src\\main\\resources\\application.yml"));
-            YamlReader reader = new YamlReader(new FileReader(".\\config\\application.yml"));
-            config = JSON.parseObject(JSON.toJSONString(reader.read()), Config.class);
+            YamlReader reader = new YamlReader(new FileReader(Config.starterPath));
+//            YamlReader reader = new YamlReader(new FileReader(".\\starter\\starter.yml"));
+            starter = JSON.parseObject(JSON.toJSONString(reader.read()), Starter.class);
         } catch (Exception e) {
             e.printStackTrace();
             return;
@@ -67,9 +68,9 @@ public class Main extends Application {
 
         ObservableList<Node> children = stackPane.getChildren();
 
-        if (config == null) return;
+        if (starter == null) return;
         //执行tcpClient初始化
-        List<Host> tcpClient = config.getTcpClient();
+        List<Host> tcpClient = starter.getTcpClient();
         if (tcpClient != null && tcpClient.size() > 0) {
             tcpClient.forEach(host -> {
                 TcpClientTab tcpClientTab = new TcpClientTab();
@@ -82,7 +83,7 @@ public class Main extends Application {
         }
 
         //执行tcpServer初始化
-        List<Host> tcpServer = config.getTcpServer();
+        List<Host> tcpServer = starter.getTcpServer();
         if (tcpServer != null && tcpServer.size() > 0) {
             tcpServer.forEach(host -> {
                 TcpServerTab tcpServerTab = new TcpServerTab();
@@ -94,7 +95,7 @@ public class Main extends Application {
         }
 
         //执行udpDatagram初始化
-        List<Host> udpDatagram = config.getUdpDatagram();
+        List<Host> udpDatagram = starter.getUdpDatagram();
         if (udpDatagram != null && udpDatagram.size() > 0) {
             udpDatagram.forEach(host -> {
                 UdpDatagramTab udpDatagramTab = new UdpDatagramTab();
@@ -107,7 +108,7 @@ public class Main extends Application {
         }
 
         //执行udpMulticast初始化
-        List<Host> udpMulticast = config.getUdpMulticast();
+        List<Host> udpMulticast = starter.getUdpMulticast();
         if (udpMulticast != null && udpMulticast.size() > 0) {
             udpMulticast.forEach(host -> {
                 UdpMulticastTab udpMulticastTab = new UdpMulticastTab();

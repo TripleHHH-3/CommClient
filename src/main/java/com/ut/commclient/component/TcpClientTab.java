@@ -1,6 +1,7 @@
 package com.ut.commclient.component;
 
 import com.ut.commclient.common.BufferedWriterLock;
+import com.ut.commclient.config.Config;
 import com.ut.commclient.model.RecModel;
 import com.ut.commclient.constant.HeartBeat;
 import com.ut.commclient.util.FileUtil;
@@ -174,8 +175,8 @@ public class TcpClientTab extends Tab {
                             socket.getLocalAddress().getHostAddress(),
                             socket.getLocalPort(),
                             msg);
-//                    FileUtil.write("src\\main\\resources\\rec\\rec.txt", recModel);
-                    FileUtil.write(".\\rec\\rec.txt", recModel);
+                    FileUtil.write(Config.recPath, recModel);
+//                    FileUtil.write(".\\rec\\rec.txt", recModel);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
